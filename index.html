@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EVA</title>
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom, #1a1a2e, #16213e);
+            color: white;
+        }
+
+        .container {
+            height: 100%;
+            overflow-y: scroll;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .container::-webkit-scrollbar {
+            width: 0;
+            height: 0;
+            display: none;
+        }
+
+        .content-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-top: 80px;
+            /* Adjusted to account for fixed header */
+        }
+
+        .fixed-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to bottom, #1a1a2e, #16213e);
+            z-index: 1000;
+            padding: 10px 0;
+            /* Reduced padding */
+        }
+
+        .content-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-top: 60px;
+            /* Adjusted to account for smaller fixed header */
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            /* Added horizontal padding */
+        }
+
+        .logo {
+            font-size: 20px;
+            /* Reduced font size */
+            font-weight: bold;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 15px;
+            /* Slightly reduced margin */
+            font-size: 16px;
+            /* Reduced font size */
+            transition: transform 0.3s ease, color 0.3s ease;
+            display: inline-block;
+        }
+
+        nav a:hover {
+            transform: scale(1.1);
+            color: #a266ed;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 50px 0;
+        }
+
+        h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .gradient-text {
+            background: linear-gradient(45deg, #a266ed, #f37ceb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .cta-button {
+            background: linear-gradient(45deg, #a266ed, #f37ceb);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        #content {
+            padding: 20px;
+        }
+
+        h2 {
+            color: #a266ed;
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 24px;
+            margin-bottom: 30px;
+        }
+
+        .features {
+            padding: 50px 0;
+            text-align: center;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .feature-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .feature-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-item i {
+            font-size: 40px;
+            color: #a266ed;
+            margin-bottom: 15px;
+        }
+
+        .testimonials {
+            padding: 50px 0;
+            text-align: center;
+        }
+
+        .testimonial-slider {
+            margin-top: 30px;
+        }
+
+        .testimonial {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 0 auto;
+            max-width: 600px;
+            margin-bottom: 10px;
+        }
+
+        .testimonial p {
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+
+        .testimonial cite {
+            font-weight: bold;
+        }
+
+        .cta {
+            text-align: center;
+            padding: 50px 0;
+            background: linear-gradient(45deg, rgba(162, 102, 237, 0.2), rgba(243, 124, 235, 0.2));
+            border-radius: 10px;
+            margin-top: 50px;
+        }
+
+        .cta h2 {
+            margin-bottom: 20px;
+        }
+
+        .cta p {
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="fixed-header">
+            <div class="content-wrapper">
+                <header>
+                    <div class="logo">Team Eureka</div>
+                    <nav>
+                        <a href="#" onclick="loadHome()"><b>Home</b></a>
+                        <a href="#" onclick="loadBot()"><b>Bot</b></a>
+                        <a href="#" onclick="loadAbout()"><b>About Us</b></a>
+                        <a href="#" onclick="loadFAQs()"><b>FAQs</b></a>
+                    </nav>
+                </header>
+            </div>
+        </div>
+        <div class="content-wrapper">
+            <main id="content">
+                <!-- Content will be dynamically loaded here -->
+            </main>
+        </div>
+    </div>
+
+    <script>
+        function loadHome() {
+            document.getElementById('content').innerHTML = `
+                <section class="hero">
+                    <h1><span class="gradient-text">EVA</span> ELOQUENT VOICE ASSISTANT </h1>
+                    <button class="cta-button"><a href="chat.html" style="text-decoration:none;">Start Your Journey</a></button>
+                </section>
+
+                <section class="features">
+                    <h2>Discover EVA's Capabilities</h2>
+                    <div class="feature-grid">
+                        <div class="feature-item">
+                            <i class="fas fa-comments"></i>
+                            <h3>Natural Conversations</h3>
+                            <p>Engage in human-like dialogues with advanced NLP.</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-microphone"></i>
+                            <h3>Voice Recognition</h3>
+                            <p>Speak naturally and let EVA understand your needs.</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-cloud-sun"></i>
+                            <h3>Weather Updates</h3>
+                            <p>Get real-time weather information for any location.</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-book"></i>
+                            <h3>Knowledge Base</h3>
+                            <p>Access a vast database of information through Wikipedia integration.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="testimonials">
+                    <h2>What Our Users Say</h2>
+                    <div class="testimonial-slider">
+                        <div class="testimonial">
+                            <p>"EVA has revolutionized how I manage my daily tasks. It's like having a personal assistant always ready to help!"</p>
+                            <cite>- Sarah J., Marketing Executive</cite>
+                        </div>
+                        <div class="testimonial">
+                            <p>"The voice recognition is incredibly accurate. I'm impressed by how well EVA understands context and nuance."</p>
+                            <cite>- Michael T., Software Developer</cite>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="cta">
+                    <h2>Ready to Experience the Future of AI Assistance?</h2>
+                    <p>Join thousands of satisfied users and start your journey with EVA today.</p>
+                    <button class="cta-button"><a href="chat.html" style="text-decoration:none;">Get started now</a></button>
+                </section>
+            `;
+
+            // Add this line to include Font Awesome icons
+            document.head.innerHTML += '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">';
+        }
+
+        function loadBot() {
+            document.getElementById("content").innerHTML = `
+                <h1>Meet EVA - Your Eloquent Voice Assistant</h1>
+                <p>EVA is our state-of-the-art conversation voice assistant designed to make your life easier and more productive.</p>
+                <h2>Key Features:</h2>
+                <ul>
+                    <li><strong>Real-time Communication: </strong> Implement real-time text-based chat functionality between the user and the bot. Provide instant feedback and responses to user queries.</li>
+                    <li><strong>Speech Recognition and Synthesis: </strong>Integrate speech recognition to allow users to input queries via voice. Implement speech synthesis to deliver bot responses audibly.</li>
+                    <li><strong>Natural Language Processing: </strong> Process and interpret user inputs accurately, correcting common misspellings and informal language.</li>
+                    <li><strong>Weather Information: </strong>Fetch and display current weather information based on user-specified cities using an external weather API.</li>
+                    <li><strong>Wikipedia Integration: </strong>  Retrieve and summarize information from Wikipedia for general knowledge queries.</li>
+                    <li><strong>Abusive Language Detection:  </strong> Detect and respond appropriately to abusive language, maintaining a respectful interaction environment.
+                </ul>
+                <p>Experience the future of conversation assistance with EVA!</p>
+            `;
+        }
+
+        function loadAbout() {
+            document.getElementById('content').innerHTML = `
+                <h1>About Team Eureka</h1>
+                <p>Team Eureka  is a cutting-edge tech company specializing in AI and voice recognition technologies. Founded in 2020, we've quickly become a leader in developing intelligent voice assistants.</p>
+                <h2>Our Mission</h2>
+                <p>To create AI-powered solutions that enhance human capabilities and simplify daily life.</p>
+                <h2>Our Team</h2>
+                <p>We're a diverse group of AI researchers, software engineers, and UX designers passionate about pushing the boundaries of what's possible with voice technology.</p>
+                <h2>Our Values</h2>
+                <ul>
+                    <li><strong>Innovation:</strong> We're always exploring new ideas and technologies.</li>
+                    <li><strong>User-Centric:</strong> Our users' needs drive our development process.</li>
+                    <li><strong>Ethical AI:</strong> We're committed to developing AI responsibly and transparently.</li>
+                    <li><strong>Collaboration:</strong> We believe in the power of teamwork and open communication.</li>
+                </ul>
+            `;
+        }
+
+        function loadFAQs() {
+            document.getElementById('content').innerHTML = `
+                <h1>Frequently Asked Questions</h1>
+                <h2>Q: What is EVA?</h2>
+                <p>A: EVA (Eloquent Voice Assistant) is an voice assistant developed by Team Eureka to help users with various tasks through natural language interactions.</p>
+
+                <h2>Q: What is this Voice about?</h2>
+                <p>A: Simply type your question or query in the input box and press 'Send'. You can also use voice input by clicking the microphone icon.</p>
+
+                <h2>Q: Can I ask about the weather?</h2>
+                <p>A: Yes, you can ask for the current weather in any city.</p>
+
+                <h2>Q: What languages does the bot support?</h2>
+                <p>A: Currently, the chatbot supports interactions in English. In future updates, we aim to introduce support for additional languages as soon as possible.
+                <h2>Q: How often is EVA updated?</h2>
+                <p>A: We release updates for EVA on a monthly basis, introducing new features, improving performance, and enhancing security. </p>
+
+                <h2>Q: Can I get assistance with technical issues or errors?</h2>
+                <p>A: For technical support or to report errors, please use the 'New Chat' option in the menu to start a new session. Describe the issue, and we'll assist you.</p>
+            `;
+        }
+
+        loadHome();
+    </script>
+
+</body>
+
+</html>
