@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chatbot Interface - Fixed Window</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+        integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="floating-shape shape1"></div>
+    <div class="floating-shape shape2"></div>
+    <div class="floating-shape shape3"></div>
+    <div class="decorative-circle"></div>
+    <div class="container">
+        <div class="circle"></div>
+        <div class="chatbot">
+            <div class="header">
+                <span class="back">&lt;</span>
+                <div class="menu-container">
+                    <span class="menu">&#9776;</span>
+                    <div class="dropdown-content">
+                        <a href="#" id="new-chat">New Chat</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bot-icon">
+                <div class="bot-eyes">
+                    <div class="eye"></div>
+                    <div class="eye"></div>
+                </div>
+            </div>
+            <div class="question">Conversational Bot</div>
+            <div class="quote">Technology is best when it brings People together!</div>
+            <div class="chat-container" id="chat-container">
+                <!-- Chat messages will be added here -->
+            </div>
+            <div class="input-container">
+                <input type="text" id="user-input" placeholder="Ask">
+                <button class="mic-button" id="voice-button"><i class="fa-solid fa-microphone"></i></button>
+                <button class="mic-button" id="voice-stop-button"><i class="fa-solid fa-circle-stop"></i></button>
+                <button class="send-button" id="send-button"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>
