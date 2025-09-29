@@ -996,7 +996,7 @@ function initializeApp() {
     }
 
     // Add initial greeting
-    addMessage("EVA", "Hello! I'm EVA, your friendly AI assistant. I can help you with weather information, answer questions, do math calculations, search for songs, and much more. How can I assist you today?");
+    addMessage("EVA", "Hello! I'm EVA, your friendly AI assistant. How can I assist you today?");
     
     // Speak initial greeting after a short delay
     setTimeout(() => {
