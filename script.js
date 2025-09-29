@@ -253,7 +253,7 @@ function speakNext() {
             utterance.voice = preferredVoice;
         }
 
-        utterance.rate = 1.1; // Slightly faster speech
+        utterance.rate = 1.0; // Slightly faster speech
         utterance.pitch = 1.0;
         utterance.volume = 1.0;
 
