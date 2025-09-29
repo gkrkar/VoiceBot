@@ -715,7 +715,7 @@ voiceButton.addEventListener("click", () => {
         try {
             recognition.start();
             isRecognitionActive = true;
-            addMessage("System", "🎤 Listening... (10 second timeout)");
+            addMessage("System", "🎤 Listening...");
             
             recognitionTimeout = setTimeout(() => {
                 if (isRecognitionActive) {
