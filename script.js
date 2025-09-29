@@ -996,11 +996,12 @@ function initializeApp() {
     }
 
     // Add initial greeting
-    addMessage("EVA", "Hello! I'm EVA, your friendly AI assistant. How can I assist you today?");
+    const initialGreeting = "Hello! I'm EVA, your friendly AI assistant. I can help you with weather information, answer questions, do math calculations, search for songs, and much more. How can I assist you today?";
+    addMessage("EVA", initialGreeting);
     
-    // Speak initial greeting after a short delay
+    // Speak the complete initial greeting after a short delay
     setTimeout(() => {
-        speakMessage("Hello! I'm EVA, your friendly AI assistant. How can I assist you today?");
+        speakMessage(initialGreeting);
     }, 500);
 
     console.log("EVA chatbot initialized successfully");
