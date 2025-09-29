@@ -185,8 +185,18 @@ function speakMessage(message) {
     speechQueue = [];
     synth.cancel();
 
-    // Clean message for speech (remove HTML tags)
-    const cleanMessage = message.replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, '');
+    // Clean message for speech (remove HTML tags and format lists)
+    let cleanMessage = message.replace(/<br\s*\/?>/gi, '. ');
+    cleanMessage = cleanMessage.replace(/<ol>/gi, '');
+    cleanMessage = cleanMessage.replace(/<\/ol>/gi, '');
+    cleanMessage = cleanMessage.replace(/<li>/gi, '');
+    cleanMessage = cleanMessage.replace(/<\/li>/gi, '. ');
+    cleanMessage = cleanMessage.replace(/<strong>/gi, '');
+    cleanMessage = cleanMessage.replace(/<\/strong>/gi, '');
+    cleanMessage = cleanMessage.replace(/<[^>]*>/g, '');
+    cleanMessage = cleanMessage.replace(/&[^;]+;/g, '');
+    cleanMessage = cleanMessage.replace(/\s+/g, ' ').trim();
+    
     const chunks = splitIntoChunks(cleanMessage);
     speechQueue = chunks;
 
@@ -243,7 +253,7 @@ function speakNext() {
             utterance.voice = preferredVoice;
         }
 
-        utterance.rate = 0.9;
+        utterance.rate = 1.1; // Slightly faster speech
         utterance.pitch = 1.0;
         utterance.volume = 1.0;
 
@@ -298,7 +308,7 @@ async function processUserInput(input) {
 
     // Weather queries with improved parsing
     if (input.includes("temperature") || input.includes("weather")) {
-        const cityMatches = input.match(/(?:in|for)\s+([a-zA-Z\s]+?)(?:\s+and\s+([a-zA-Z\s]+?))?(?:\s|$)/);
+        const cityMatches = input.match(/(?:in|for)\s+([a-zA-Z\s]+?)(?:\s+and\s+([a-zA-Z\s]+?))?(?:\s|$|[?!.])/);
         if (cityMatches) {
             const cities = [cityMatches[1].trim()];
             if (cityMatches[2]) {
@@ -365,9 +375,21 @@ async function processUserInput(input) {
         response += "I don't have access to your personal information, including your name. Each conversation with me starts fresh. ";
     }
 
-    // Math expressions
-    if (/[\d\s]*[-+*/]\s*[\d\s]/.test(input)) {
-        response += calculateMathExpression(input) + " ";
+    // Math expressions - Enhanced to handle percentages
+    if (/[\d\s]*[-+*/%]\s*[\d\s]/.test(input) || input.includes("percent") || input.includes("%")) {
+        if (input.includes("%") || input.includes("percent")) {
+            const percentMatch = input.match(/(\d+)%?\s*of\s*(\d+)/i);
+            if (percentMatch) {
+                const percentage = parseFloat(percentMatch[1]);
+                const number = parseFloat(percentMatch[2]);
+                const result = (percentage / 100) * number;
+                response += `${percentage}% of ${number} = ${result}. `;
+            } else {
+                response += calculateMathExpression(input) + " ";
+            }
+        } else {
+            response += calculateMathExpression(input) + " ";
+        }
     }
 
     // Website opening
@@ -466,10 +488,9 @@ async function getWeather(cities) {
             
             if (data.cod === 200) {
                 const temp = Math.round(data.main.temp);
-                const feelsLike = Math.round(data.main.feels_like);
                 const description = data.weather[0].description;
                 const humidity = data.main.humidity;
-                return `In ${city.charAt(0).toUpperCase() + city.slice(1)}: ${temp}°C (feels like ${feelsLike}°C), ${description}, humidity ${humidity}%.`;
+                return `In ${city.charAt(0).toUpperCase() + city.slice(1)}: ${temp}°C, ${description}, humidity ${humidity}%.`;
             } else {
                 return `Weather information unavailable for ${city}. Please check the city name.`;
             }
@@ -715,7 +736,7 @@ voiceButton.addEventListener("click", () => {
         try {
             recognition.start();
             isRecognitionActive = true;
-            addMessage("System", "🎤 Listening...");
+            addMessage("System", "🎤 Listening... (10 second timeout)");
             
             recognitionTimeout = setTimeout(() => {
                 if (isRecognitionActive) {
