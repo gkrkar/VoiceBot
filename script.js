@@ -1,8 +1,5 @@
 // 1. Constants and Variable Declarations
 const WEATHER_API_KEY = "6294cf4c2ab4b8ededcaa9f9cbd85311";
-const GEMINI_API_KEY = "AIzaSyCuTytM74QO2BjPQ3o6ED4ZRXtrY7gB3VY";
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
-
 let speechQueue = [];
 let isSpeaking = false;
 let isRecognitionActive = false;
@@ -74,11 +71,13 @@ function detectAbusiveLanguage(input) {
 
 function calculateMathExpression(expression) {
     try {
+        // More secure math evaluation
         const sanitizedExpression = expression.replace(/[^-()\d/*+.\s]/g, '');
         if (!sanitizedExpression.trim()) {
             return "Please provide a valid math expression.";
         }
         
+        // Use Function constructor instead of eval for better security
         const result = new Function('return ' + sanitizedExpression)();
         
         if (typeof result !== 'number' || !isFinite(result)) {
@@ -117,6 +116,7 @@ function loadVoices() {
                 voices = synth.getVoices();
                 resolve(voices);
             };
+            // Fallback timeout
             setTimeout(() => resolve(synth.getVoices()), 1000);
         }
     });
@@ -135,6 +135,7 @@ function logConversation(sender, message) {
         timestamp: new Date().toISOString()
     });
     
+    // Keep only last 50 messages to prevent memory issues
     if (conversationHistory.length > 50) {
         conversationHistory = conversationHistory.slice(-50);
     }
@@ -145,6 +146,7 @@ function addMessage(sender, message) {
     const messageElement = document.createElement("div");
     messageElement.classList.add("message-container");
     
+    // Sanitize message content
     const sanitizedMessage = sanitizeHTML(message);
     
     logConversation(sender, message);
@@ -183,6 +185,7 @@ function speakMessage(message) {
     speechQueue = [];
     synth.cancel();
 
+    // Clean message for speech (remove HTML tags and format lists)
     let cleanMessage = message.replace(/<br\s*\/?>/gi, '. ');
     cleanMessage = cleanMessage.replace(/<ol>/gi, '');
     cleanMessage = cleanMessage.replace(/<\/ol>/gi, '');
@@ -240,6 +243,7 @@ function speakNext() {
             speakNext();
         };
 
+        // Enhanced voice selection
         const voices = synth.getVoices();
         const preferredVoice = voices.find(voice => 
             voice.name.includes('Google') && voice.lang.startsWith('en')
@@ -249,7 +253,7 @@ function speakNext() {
             utterance.voice = preferredVoice;
         }
 
-        utterance.rate = 1.0;
+        utterance.rate = 1.0; // Slightly faster speech
         utterance.pitch = 1.0;
         utterance.volume = 1.0;
 
@@ -262,79 +266,7 @@ function speakNext() {
     }
 }
 
-// 7. NEW: Gemini AI Integration
-async function getGeminiResponse(query) {
-    try {
-        const contextMessages = conversationHistory
-            .slice(-10)
-            .filter(msg => msg.sender === "You" || msg.sender === "EVA")
-            .map(msg => `${msg.sender === "You" ? "User" : "EVA"}: ${msg.message}`)
-            .join('\n');
-
-        const systemPrompt = "You are EVA, a friendly and helpful AI assistant. Keep your responses conversational, concise, and natural. Don't use markdown formatting.";
-        
-        const prompt = contextMessages 
-            ? `${systemPrompt}\n\nPrevious conversation:\n${contextMessages}\n\nUser: ${query}\n\nEVA:`
-            : `${systemPrompt}\n\nUser: ${query}\n\nEVA:`;
-
-        const response = await fetch(GEMINI_API_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                contents: [{
-                    parts: [{
-                        text: prompt
-                    }]
-                }],
-                generationConfig: {
-                    temperature: 0.7,
-                    maxOutputTokens: 500,
-                    topP: 0.8,
-                    topK: 40
-                },
-                safetySettings: [
-                    {
-                        category: "HARM_CATEGORY_HARASSMENT",
-                        threshold: "BLOCK_MEDIUM_AND_ABOVE"
-                    },
-                    {
-                        category: "HARM_CATEGORY_HATE_SPEECH",
-                        threshold: "BLOCK_MEDIUM_AND_ABOVE"
-                    }
-                ]
-            })
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            console.error('Gemini API error:', errorData);
-            
-            if (response.status === 429) {
-                return "I'm receiving too many requests right now. Please wait a moment and try again.";
-            }
-            
-            throw new Error(`Gemini API error: ${response.status}`);
-        }
-
-        const data = await response.json();
-        
-        if (data.candidates && data.candidates.length > 0) {
-            const text = data.candidates[0].content.parts[0].text;
-            return text.trim();
-        } else if (data.promptFeedback) {
-            return "I couldn't generate a response for that query. Please try rephrasing.";
-        } else {
-            throw new Error('No response from Gemini');
-        }
-    } catch (error) {
-        console.error('Gemini API error:', error);
-        return "I'm having trouble processing your request right now. Please try again later.";
-    }
-}
-
-// 8. Enhanced Input Processing Functions
+// 7. Enhanced Input Processing Functions
 async function processUserInput(input) {
     const originalInput = input;
     input = input.toLowerCase().trim();
@@ -374,7 +306,7 @@ async function processUserInput(input) {
         }
     }
 
-    // Weather queries
+    // Weather queries with improved parsing
     if (input.includes("temperature") || input.includes("weather")) {
         const cityMatches = input.match(/(?:in|for)\s+([a-zA-Z\s]+?)(?:\s+and\s+([a-zA-Z\s]+?))?(?:\s|$|[?!.])/);
         if (cityMatches) {
@@ -400,7 +332,50 @@ async function processUserInput(input) {
         };
     }
 
-    // Math expressions
+    // Greetings
+    if (/\b(hello|hi|hey)\b/.test(input) || input.includes("eva")) {
+        const greetings = [
+            "Hello! I'm EVA, your friendly assistant. How can I help you today?",
+            "Hi there! I'm here to help you with various questions and tasks.",
+            "Hey! Great to chat with you. What can I assist you with?"
+        ];
+        response += greetings[Math.floor(Math.random() * greetings.length)] + " ";
+    }
+
+    // Farewells
+    if (/\b(bye|goodbye|see you|farewell)\b/.test(input)) {
+        const farewells = [
+            "Goodbye! It was great chatting with you.",
+            "See you later! Feel free to come back anytime.",
+            "Farewell! Hope I was helpful today."
+        ];
+        response += farewells[Math.floor(Math.random() * farewells.length)] + " ";
+    }
+
+    // Thanks
+    if (/\b(thank you|thanks|thankyou)\b/.test(input)) {
+        const thankResponses = [
+            "You're welcome! Happy to help.",
+            "My pleasure! Let me know if you need anything else.",
+            "Glad I could help! Is there anything else you'd like to know?"
+        ];
+        response += thankResponses[Math.floor(Math.random() * thankResponses.length)] + " ";
+    }
+
+    // Identity questions
+    if (input.includes("what is your name") || input.includes("who are you") || input.includes("what's your name")) {
+        response += "I'm EVA, your conversational AI assistant. I'm here to help with questions, provide information, and have friendly chats. ";
+    }
+
+    if (input.includes("who created you") || input.includes("who made you") || input.includes("your creator")) {
+        response += "I was created by Team Eureka. They designed me to be helpful, informative, and friendly. ";
+    }
+
+    if (input.includes("what's my name") || input.includes("what is my name") || input.includes("do you know my name")) {
+        response += "I don't have access to your personal information, including your name. Each conversation with me starts fresh. ";
+    }
+
+    // Math expressions - Enhanced to handle percentages
     if (/[\d\s]*[-+*/%]\s*[\d\s]/.test(input) || input.includes("percent") || input.includes("%")) {
         if (input.includes("%") || input.includes("percent")) {
             const percentMatch = input.match(/(\d+)%?\s*of\s*(\d+)/i);
@@ -457,9 +432,15 @@ async function processUserInput(input) {
         }
     }
 
-    // Fallback to Gemini AI if no specific response
+    // Time-based greetings
+    const greetingResponse = getGreetingResponse(input);
+    if (greetingResponse) {
+        response += greetingResponse + " ";
+    }
+
+    // Fallback to search if no specific response
     if (!response.trim()) {
-        response += await getGeminiResponse(originalInput) + " ";
+        response += await getDuckDuckGoAnswer(originalInput) + " ";
     }
 
     return { text: response.trim(), speech: response.trim() };
@@ -492,7 +473,7 @@ async function handleUserInput(userMessage) {
     }
 }
 
-// 9. API Interaction Functions
+// 8. Enhanced API Interaction Functions
 async function getWeather(cities) {
     const weatherPromises = cities.map(async (city) => {
         try {
@@ -528,11 +509,36 @@ async function getWeather(cities) {
     }
 }
 
+async function getDuckDuckGoAnswer(query) {
+    try {
+        const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.AbstractText) {
+            return data.AbstractText;
+        } else if (data.RelatedTopics && data.RelatedTopics.length > 0) {
+            return data.RelatedTopics[0].Text || "I couldn't find specific information about that topic.";
+        } else {
+            return `I don't have detailed information about "${query}". Could you try rephrasing your question or being more specific?`;
+        }
+    } catch (error) {
+        console.error('DuckDuckGo API error:', error);
+        return `I'm having trouble searching for information about "${query}" right now. Please try again later.`;
+    }
+}
+
 async function searchSpotifySongs(query) {
     const clientId = 'bc4b1464a18a483f923e8b0b53dc706d';
     const clientSecret = 'fdd4999d1dd5433ab98ca953082670f5';
 
     try {
+        // Get access token
         const authResponse = await fetch('https://accounts.spotify.com/api/token', {
             method: 'POST',
             headers: {
@@ -549,6 +555,7 @@ async function searchSpotifySongs(query) {
         const authData = await authResponse.json();
         const accessToken = authData.access_token;
 
+        // Search for songs
         const searchResponse = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=5`, {
             headers: {
                 'Authorization': 'Bearer ' + accessToken
@@ -641,10 +648,12 @@ async function getDefinition(topic, lines = 3) {
 }
 
 function generateWebsiteUrl(website, action, query) {
+    // Add .com if no domain extension
     if (!website.includes('.')) {
         website += '.com';
     }
 
+    // Ensure protocol
     let baseUrl = website.startsWith('http://') || website.startsWith('https://') ? 
                   website : 'https://' + website;
 
@@ -683,7 +692,25 @@ function openWebsite(url, website, action, query) {
     }
 }
 
-// 10. Event Listeners
+function getGreetingResponse(input) {
+    const currentHour = new Date().getHours();
+    
+    const greetings = {
+        "good morning": currentHour < 12 ? "Good morning! I hope you're having a great start to your day." : "Good morning! Though it's past noon here, I hope your day is going well.",
+        "good afternoon": currentHour >= 12 && currentHour < 17 ? "Good afternoon! I hope your day is going well." : "Good afternoon! I hope you're having a nice day.",
+        "good evening": currentHour >= 17 ? "Good evening! I hope you've had a pleasant day." : "Good evening! Though it's still early, I hope your day has been good.",
+        "good night": "Good night! Sleep well and have sweet dreams.",
+    };
+
+    for (const [greeting, response] of Object.entries(greetings)) {
+        if (input.includes(greeting)) {
+            return response;
+        }
+    }
+    return null;
+}
+
+// 9. Enhanced Event Listeners
 sendButton.addEventListener("click", () => {
     const userMessage = userInput.value.trim();
     if (userMessage) {
@@ -698,6 +725,7 @@ userInput.addEventListener("keypress", (e) => {
     }
 });
 
+// Enhanced voice button with better error handling
 voiceButton.addEventListener("click", () => {
     if (!recognition) {
         addMessage("System", "Speech recognition is not supported in this browser.");
@@ -753,6 +781,7 @@ stopButton.addEventListener("click", () => {
     }
 });
 
+// Enhanced chat container event handling
 chatContainer.addEventListener("click", async (event) => {
     if (event.target.closest(".edit-button")) {
         const messageContainer = event.target.closest(".message-container");
@@ -785,6 +814,7 @@ chatContainer.addEventListener("click", async (event) => {
             `;
             messageContainer.classList.remove("editing");
 
+            // Process the edited message
             try {
                 const aiResponse = await processUserInput(newMessage);
                 const responseText = typeof aiResponse === 'string' ? aiResponse : aiResponse.text;
@@ -815,6 +845,7 @@ chatContainer.addEventListener("click", async (event) => {
         messageContainer.classList.remove("editing");
     }
 
+    // Enhanced copy functionality
     if (event.target.closest(".copy-button")) {
         const messageText = event.target.closest(".message-container").querySelector(".message-text").textContent;
         const copyButton = event.target.closest(".copy-button");
@@ -846,6 +877,7 @@ chatContainer.addEventListener("click", async (event) => {
     }
 });
 
+// Enhanced speech recognition event handlers
 if (recognition) {
     recognition.onresult = (event) => {
         clearTimeout(recognitionTimeout);
@@ -893,6 +925,7 @@ if (recognition) {
     };
 }
 
+// Menu and dropdown handling
 menuButton.addEventListener("click", (e) => {
     e.stopPropagation();
     dropdownContent.style.display = dropdownContent.style.display === "block" ? "none" : "block";
@@ -901,37 +934,50 @@ menuButton.addEventListener("click", (e) => {
 newChatButton.addEventListener("click", (e) => {
     e.preventDefault();
     if (confirm("Are you sure you want to start a new chat? This will clear all current messages.")) {
+        // Clear conversation history
         conversationHistory = [];
+        
+        // Clear chat container
         chatContainer.innerHTML = "";
+        
+        // Stop any ongoing speech
         synth.cancel();
         speechQueue = [];
         isSpeaking = false;
         
+        // Reset recognition state
         if (isRecognitionActive && recognition) {
             recognition.stop();
             isRecognitionActive = false;
         }
         
+        // Add initial greeting
         addMessage("EVA", "Hello! How can I assist you today?");
         speakMessage("Hello! How can I assist you today?");
+        
+        // Hide dropdown
         dropdownContent.style.display = "none";
     }
 });
 
+// Close dropdown when clicking outside
 document.addEventListener("click", (event) => {
     if (!event.target.matches('.menu') && !event.target.closest('.dropdown-content')) {
         dropdownContent.style.display = "none";
     }
 });
 
+// Handle page visibility changes
 document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
+        // Stop speech when page is hidden
         synth.cancel();
         speechQueue = [];
         isSpeaking = false;
     }
 });
 
+// Handle beforeunload
 window.addEventListener("beforeunload", (e) => {
     if (conversationHistory.length > 1) {
         e.preventDefault();
@@ -939,7 +985,7 @@ window.addEventListener("beforeunload", (e) => {
     }
 });
 
-// 11. Initialization
+// 10. Enhanced Initialization
 async function initializeSpeech() {
     if (checkSpeechSynthesisSupport()) {
         try {
@@ -952,6 +998,7 @@ async function initializeSpeech() {
 }
 
 function initializeApp() {
+    // Check for required DOM elements
     const requiredElements = [
         'chat-container', 'user-input', 'send-button', 
         'voice-button', 'voice-stop-button'
@@ -964,20 +1011,24 @@ function initializeApp() {
         return;
     }
 
+    // Set input placeholder
     if (userInput) {
         userInput.placeholder = "Type your message here... (Press Enter to send)";
     }
 
-    const initialGreeting = "Hello! I'm EVA, your friendly AI assistant powered by Google Gemini. I can help you with weather information, answer questions, do math calculations, search for songs, and much more. How can I assist you today?";
+    // Add initial greeting
+    const initialGreeting = "Hello! I'm EVA, your friendly AI assistant. I can help you with weather information, answer questions, do math calculations, search for songs, and much more. How can I assist you today?";
     addMessage("EVA", initialGreeting);
     
+    // Speak the complete initial greeting after a short delay
     setTimeout(() => {
         speakMessage(initialGreeting);
     }, 500);
 
-    console.log("EVA chatbot with Gemini AI initialized successfully");
+    console.log("EVA chatbot initialized successfully");
 }
 
+// Initialize when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         initializeApp();
@@ -988,6 +1039,7 @@ if (document.readyState === 'loading') {
     initializeSpeech();
 }
 
+// Error handling for unhandled errors
 window.addEventListener('error', (event) => {
     console.error('Unhandled error:', event.error);
     addMessage("System", "An unexpected error occurred. Please refresh the page if problems persist.");
@@ -997,3 +1049,15 @@ window.addEventListener('unhandledrejection', (event) => {
     console.error('Unhandled promise rejection:', event.reason);
     event.preventDefault();
 });
+
+// Export functions for testing (if needed)
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        processUserInput,
+        calculateMathExpression,
+        autoCorreectSpelling,
+        detectAbusiveLanguage,
+        getTime,
+        getDate
+    };
+}
